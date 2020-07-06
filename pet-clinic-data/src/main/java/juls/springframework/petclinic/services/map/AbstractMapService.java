@@ -1,26 +1,40 @@
 package juls.springframework.petclinic.services.map;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import juls.springframework.petclinic.model.BaseEntity;
 
-public abstract class AbstractMapService<T,ID> {
-    private Map<ID,T> map = new HashMap<ID, T>();
+import java.util.*;
 
-    T save(ID id, T obj){
-        return map.put(id, obj);
+public abstract class AbstractMapService<T extends BaseEntity,ID extends Long> {
+    private Map<Long,T> map = new HashMap<>();
+
+    T save(T obj){
+        if(obj != null) {
+            if (obj.getId() == null)
+                obj.setId(getNextId());
+                map.put(obj.getId(), obj);
+        }else {
+            throw new RuntimeException("Object can't be null!!");
+        }
+        return obj;
     }
     T findById(ID id){
         return map.get(id);
     }
     Set<T> findAll(){
-        return new HashSet<T>(map.values());
+        return new HashSet<>(map.values());
     }
     void deleteById(ID id){
         map.remove(id);
     }
     void delete(T obj){
         map.entrySet().removeIf(entry -> entry.getValue().equals(obj));
+    }
+    private Long getNextId(){
+        Long nextId = 1L;
+        if(!map.keySet().isEmpty()) {
+            nextId = Collections.max(map.keySet()) + 1L;
+        }
+        return nextId;
+
     }
 }
